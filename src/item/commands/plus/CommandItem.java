@@ -69,7 +69,7 @@ public class CommandItem {
 		this.touch = touch;
 	}
 
-	public boolean getTouch(){
+	public boolean canTouch(){
 		return touch;
 	}
 

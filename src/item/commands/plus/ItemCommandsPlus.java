@@ -29,9 +29,10 @@ public class ItemCommandsPlus extends JavaPlugin {
 		plugin = this;
 
 		config = new CustomConfig(plugin);
-		data = new CustomConfig(plugin);
+		data = new CustomConfig(plugin, "data.yml");
 
 		commands = new HashMap<String, TabExecutor>();
+		commands.put("ic+", new MainCommand(plugin));
 
 		cooldown = new HashMap<String, String>();
 
@@ -72,6 +73,11 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public void setItem(CommandItem item){
 		data.getConfig().set(item.getName(), item);
+		config.updateConfig();
+	}
+
+	public void removeItem(String name){
+		data.getConfig().set(name, null);
 	}
 
 	public CommandItem getItem(String name){
