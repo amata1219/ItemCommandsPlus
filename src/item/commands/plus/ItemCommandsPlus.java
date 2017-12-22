@@ -1,9 +1,13 @@
 package item.commands.plus;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -63,12 +67,26 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public void updateItems(){
 		List<CommandItem> items = new ArrayList<CommandItem>();
-		for(String name : getItemNames())items.add(getItem(name));
+		for(String name : getNames())items.add(getItem(name));
 		this.items = items;
 	}
 
-	public List<String> getItemNames(){
-		return data.getConfig().getStringList("List");
+	public void addNames(String name){
+		List<String> list = getNames();
+		if(!list.contains(name)){
+			list.add(name);
+			data.getConfig().set("Names", list);
+		}
+	}
+
+	public void remvoeNames(String name){
+		List<String> list = getNames();
+		list.remove(name);
+		data.getConfig().set("Names", list);
+	}
+
+	public List<String> getNames(){
+		return data.getConfig().getStringList("Names");
 	}
 
 	public void setItem(CommandItem item){
@@ -99,12 +117,37 @@ public class ItemCommandsPlus extends JavaPlugin {
 	public boolean isCooldown(UUID uuid, int cooldownTick){
 		if(!cooldown.containsKey(uuid.toString()))return false;
 		return System.currentTimeMillis() - Long.valueOf(getCooldownTime(uuid)) <= cooldownTick;
+	}
 
+	public List<String> actions(){
+		List<String> list = new ArrayList<String>(Arrays.asList("RIGHT_CLICK_AIR", "RIGHT_CLICK_BLOCK", "LEFT_CLICK_AIR", "LEFT_CLICK_BLOCK",
+				"RIGHT_TOUCH_ENTITY", "LEFT_TOUCH_ENTITY"));
+		return list;
+	}
+
+	public String stringBuild(String[] args, int min){
+		StringBuilder sb = new StringBuilder();
+		for(int i = min; i < args.length; i++)sb.append(sb + " ");
+		return sb.substring(0, sb.length()).toString();
 	}
 
 	private  void createFolder(){
 		File file = new File(plugin.getDataFolder() + File.separator + "Backup");
 		if(!file.exists())file.mkdir();
+	}
+
+	public void backupFile(String s) throws IOException{
+		FileInputStream fileIn = new FileInputStream(plugin.getDataFolder() + File.separator + s + ".yml");
+		FileOutputStream fileOut = new FileOutputStream(plugin.getDataFolder() + File.separator + "Backup" + File.separator + s + "-" + System.currentTimeMillis() + ".yml");
+		byte[] buf = new byte[256];
+		@SuppressWarnings("unused")
+		int len = 0;
+		while((len = fileIn.read(buf)) != -1){
+			fileOut.write(buf);
+		}
+		fileOut.flush();
+		fileOut.close();
+		fileIn.close();
 	}
 
 	public URL getTopicURL(){
