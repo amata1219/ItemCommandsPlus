@@ -91,10 +91,47 @@ public class MainCommand implements TabExecutor{
 			return true;
 		}else if(args[0].equalsIgnoreCase("edit")){
 			if(args.length == 1){
-				//how to use edit
+				sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "- Edit使用方法 -");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] permission [permission/null]");
+				sender.sendMessage(ChatColor.WHITE + "アイテムの使用に必要なパーミッションを設定します。値にnullを選択すると削除します。"
+						+ "パーミッションを設定しなくてもアイテムは使用出来ます。");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] click [true/false]");
+				sender.sendMessage(ChatColor.WHITE + "クリック動作でアイテムを使用するか選択します。*");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] touch [true/false]");
+				sender.sendMessage(ChatColor.WHITE + "エンティティタッチ動作でアイテムを使用するか選択します。*");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] cooldown [true/false]");
+				sender.sendMessage(ChatColor.WHITE + "クールダウン機能を使用するか選択します。*");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] cooldownTick [tick]");
+				sender.sendMessage(ChatColor.WHITE + "クールダウン時間を指定します。単位はtickで、1秒=20tickとなります。");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] cooldownMessage [message/null]");
+				sender.sendMessage(ChatColor.WHITE + "クールダウン中にアイテムを使用しようとした場合に表示するメッセージを設定します。値にnullを選択すると削除します。"
+						+ "メッセージを設定していない場合はコンフィグのデフォルト値が参照されます。");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] remove [true/false]");
+				sender.sendMessage(ChatColor.WHITE + "アイテムを消費するか選択します。*");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] actions [add/remove] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
+						+ "RIGHT_TOUCH_ENTITY/LEFT_TOUCH_ENTITY]");
+				sender.sendMessage(ChatColor.WHITE + "アイテム使用タイミングの条件選択をします。addで追加、removeで削除します。");
+				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] commands [add/remove] [console/operator/player] [command]");
+				sender.sendMessage(ChatColor.WHITE + "アイテム使用時に実行するコマンドを指定します。addで追加、removeで削除します。"
+						+ "consoleでコンソールから、operatorで権限無視、playerで権限確認有りのコマンドとして登録します。");
+				sender.sendMessage(ChatColor.GRAY + "* trueで有効、falseで無効になります。");
 				return true;
 			}else if(args.length == 2){
-				//item info
+				CommandItem item = plugin.getItem(args[1]);
+				if(item == null){
+					sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
+					return true;
+				}
+				sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "- " + item.getName() + " -");
+				sender.sendMessage(ChatColor.WHITE + "- Permission: " + item.getPermission());
+				sender.sendMessage(ChatColor.WHITE + "- Click: " + item.canClick());
+				sender.sendMessage(ChatColor.WHITE + "- Touch: " + item.canTouch());
+				sender.sendMessage(ChatColor.WHITE + "- Cooldown: " + item.getCooldown());
+				sender.sendMessage(ChatColor.WHITE + "- CooldownTick: " + item.getCooldownTick());
+				sender.sendMessage(ChatColor.WHITE + "- CooldownMessage: " + item.getCooldownMessage());
+				sender.sendMessage(ChatColor.WHITE + "- Remove: " + item.getRemove());
+				sender.sendMessage(ChatColor.WHITE + "- Actions: " + item.getActionsForDisplay());
+				sender.sendMessage(ChatColor.WHITE + "- Commands: " + item.getCommandsForDisplay());
 				return true;
 			}
 			CommandItem item = plugin.getItem(args[1]);
@@ -110,6 +147,7 @@ public class MainCommand implements TabExecutor{
 				}
 				if(args[3].equalsIgnoreCase("null"))item.setPermission(null);
 				else item.setPermission(args[3]);
+				plugin.setItem(item);
 				String s = item.getPermission() != null ? "[" + args[3] + "]に設定しました。" : "削除しました。";
 				sender.sendMessage(ChatColor.AQUA + "Permissionを" + s);
 				return true;
@@ -126,6 +164,7 @@ public class MainCommand implements TabExecutor{
 					cmd(sender, args[0], args[2]);
 					return true;
 				}
+				plugin.setItem(item);
 				String s = item.canClick() ? "有効" : "無効";
 				sender.sendMessage(ChatColor.AQUA + "Clickを[" + s + "]にしました。");
 				return true;
@@ -142,6 +181,7 @@ public class MainCommand implements TabExecutor{
 					cmd(sender, args[0], args[2]);
 					return true;
 				}
+				plugin.setItem(item);
 				String s = item.canTouch() ? "有効" : "無効";
 				sender.sendMessage(ChatColor.AQUA + "Touchを[" + s + "]にしました。");
 				return true;
@@ -158,6 +198,7 @@ public class MainCommand implements TabExecutor{
 					cmd(sender, args[0], args[2]);
 					return true;
 				}
+				plugin.setItem(item);
 				String s = item.getCooldown() ? "有効" : "無効";
 				sender.sendMessage(ChatColor.AQUA + "Cooldownを[" + s + "]にしました。");
 				return true;
@@ -175,6 +216,7 @@ public class MainCommand implements TabExecutor{
 					return true;
 				}
 				item.setCooldownTick(i);
+				plugin.setItem(item);
 				sender.sendMessage(ChatColor.AQUA + "CooldownTickを[" + i + "tick]に設定しました。");
 				return true;
 			}else if(args[2].equalsIgnoreCase("cooldownMessage")){
@@ -183,8 +225,15 @@ public class MainCommand implements TabExecutor{
 					cmd(sender, args[0], args[2]);
 					return true;
 				}
+				if(args.length == 4 && args[3].equalsIgnoreCase("null")){
+					item.setCooldownMessage(null);
+					plugin.setItem(item);
+					sender.sendMessage(ChatColor.AQUA + "CooldownMessageを削除しました。");
+					return true;
+				}
 				String s = plugin.stringBuild(args, 3);
 				item.setCooldownMessage(s);
+				plugin.setItem(item);
 				sender.sendMessage(ChatColor.AQUA + "CooldownMessageを[" + s + "]に設定しました。");
 				return true;
 			}else if(args[2].equalsIgnoreCase("remove")){
@@ -200,6 +249,7 @@ public class MainCommand implements TabExecutor{
 					cmd(sender, args[0], args[2]);
 					return true;
 				}
+				plugin.setItem(item);
 				String s = item.getRemove() ? "有効" : "無効";
 				sender.sendMessage(ChatColor.AQUA + "Removeを[" + s + "]にしました。");
 				return true;
@@ -217,6 +267,7 @@ public class MainCommand implements TabExecutor{
 					for(String a : plugin.actions()){
 						if(args[4].equalsIgnoreCase(a)){
 							item.addAction(a);
+							plugin.setItem(item);
 							sender.sendMessage(ChatColor.AQUA + "Actionsに[" + a + "]を追加しました。");
 							return true;
 						}
@@ -232,6 +283,7 @@ public class MainCommand implements TabExecutor{
 					for(String a : plugin.actions()){
 						if(args[4].equalsIgnoreCase(a)){
 							item.removeAction(a);
+							plugin.setItem(item);
 							sender.sendMessage(ChatColor.AQUA + "Actionsから[" + a + "]を削除しました。");
 							return true;
 						}
@@ -241,13 +293,15 @@ public class MainCommand implements TabExecutor{
 					return true;
 				}
 			}else if(args[2].equalsIgnoreCase("commands")){
-				if(args.length == 3||args.length == 4){
+				if(args.length == 3||args.length == 4||args.length == 5||!plugin.types().contains(args[4].toLowerCase())){
 					error(sender);
+					cmd(sender, args[0], args[2]);
 					return true;
 				}
 				if(args[3].equalsIgnoreCase("add")){
 					String s = plugin.stringBuild(args, 4);
 					item.addCommand(s);
+					plugin.setItem(item);
 					sender.sendMessage(ChatColor.AQUA + "Commandsに[" + s + "]を追加しました。");
 					return true;
 				}else if(args[3].equalsIgnoreCase("remove")){
@@ -255,6 +309,7 @@ public class MainCommand implements TabExecutor{
 					for(String c : item.getCommands()){
 						if(s.equalsIgnoreCase(c)){
 							item.removeCommand(c);
+							plugin.setItem(item);
 							sender.sendMessage(ChatColor.AQUA + "Commandsから[" + c + "]を削除しました。");
 							return true;
 						}

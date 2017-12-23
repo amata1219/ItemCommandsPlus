@@ -125,6 +125,11 @@ public class ItemCommandsPlus extends JavaPlugin {
 		return list;
 	}
 
+	public List<String> types(){
+		List<String> list = new ArrayList<String>(Arrays.asList("console", "operator", "player"));
+		return list;
+	}
+
 	public String stringBuild(String[] args, int min){
 		StringBuilder sb = new StringBuilder();
 		for(int i = min; i < args.length; i++)sb.append(sb + " ");

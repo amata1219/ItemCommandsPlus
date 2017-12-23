@@ -121,6 +121,12 @@ public class CommandItem {
 		return actions;
 	}
 
+	public String getActionsForDisplay(){
+		StringBuilder sb = new StringBuilder();
+		for(String s : getActions())sb.append(s + ", ");
+		return sb.substring(0, sb.length()).toString();
+	}
+
 	public void setCommands(List<String> commands){
 		this.commands = commands;
 	}
@@ -135,5 +141,11 @@ public class CommandItem {
 
 	public List<String> getCommands(){
 		return commands;
+	}
+
+	public String getCommandsForDisplay(){
+		StringBuilder sb = new StringBuilder();
+		for(String s : getCommands())sb.append(s + ", ");
+		return sb.substring(0, sb.length()).toString();
 	}
 }
