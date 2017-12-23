@@ -9,8 +9,6 @@ public class CommandItem {
 	private String name;
 	private ItemStack item;
 	private String permission;
-	private boolean click;
-	private boolean touch;
 	private boolean cooldown;
 	private String cooldownTick;
 	private String cooldownMessage;
@@ -18,13 +16,11 @@ public class CommandItem {
 	private List<String> actions;
 	private List<String> commands;
 
-	CommandItem(String name, ItemStack item, String permission, boolean click, boolean touch, boolean cooldown, int cooldownTick, String cooldownMessage,
+	CommandItem(String name, ItemStack item, String permission, boolean cooldown, int cooldownTick, String cooldownMessage,
 			boolean remove, List<String> actions, List<String> commands){
 		setName(name);
 		setItemStack(item);
 		setPermission(permission);
-		setClick(click);
-		setTouch(touch);
 		setCooldown(cooldown);
 		setCooldownTick(cooldownTick);
 		setCooldownMessage(cooldownMessage);
@@ -33,7 +29,7 @@ public class CommandItem {
 		setCommands(commands);
 	}
 
-	public void setName(String name){
+	private void setName(String name){
 		this.name = name;
 	}
 
@@ -55,22 +51,6 @@ public class CommandItem {
 
 	public String getPermission(){
 		return permission;
-	}
-
-	public void setClick(boolean click){
-		this.click = click;
-	}
-
-	public boolean canClick(){
-		return click;
-	}
-
-	public void setTouch(boolean touch){
-		this.touch = touch;
-	}
-
-	public boolean canTouch(){
-		return touch;
 	}
 
 	public void setCooldown(boolean cooldown){

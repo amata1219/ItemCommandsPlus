@@ -1,5 +1,7 @@
 package item.commands.plus;
 
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -11,6 +13,15 @@ public class PlayerUseCommandItemEvent extends Event implements Cancellable{
 	private boolean cancelled;
 	private Player player;
 	private CommandItem item;
+	private Block block;
+	private Entity entity;
+
+	PlayerUseCommandItemEvent(Player player, CommandItem item, Block block, Entity entity){
+		this.player = player;
+		this.item = item;
+		this.block = block;
+		this.entity = entity;
+	}
 
 	public Player getPlayer(){
 		return player;
@@ -18,6 +29,14 @@ public class PlayerUseCommandItemEvent extends Event implements Cancellable{
 
 	public CommandItem getCommandItem(){
 		return item;
+	}
+
+	public Block getBlock(){
+		return block;
+	}
+
+	public Entity getEntity(){
+		return entity;
 	}
 
 	public void setCancelled(boolean cancelled){

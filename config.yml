@@ -1,1 +1,2 @@
-DefaultCooldownMessage:
+DefaultCooldownMessage: §4クールダウン中です(後[cooldown]tick)！
+EnableLogging: true
