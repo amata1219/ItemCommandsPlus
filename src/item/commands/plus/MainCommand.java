@@ -46,7 +46,7 @@ public class MainCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.WHITE + "- 手に持ったアイテムを指定した名前で登録します。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ remove [name]");
 			sender.sendMessage(ChatColor.WHITE + "- 指定した名前で登録されている情報を削除します。");
-			sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] [permission/cooldown/cooldownTick…]");
+			sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] [permission/cooldownTick/cooldownMessage/remove/actions/commands]");
 			sender.sendMessage(ChatColor.WHITE + "- 登録されたアイテム情報を編集します。使用方法は /ic+ edit でご確認下さい。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ list");
 			sender.sendMessage(ChatColor.WHITE + "- 全アイテム名を表示します。");
@@ -65,8 +65,7 @@ public class MainCommand implements TabExecutor{
 			}
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if(item != null && item.getType() != null && item.getType() != Material.AIR){
-				List<String> list = new ArrayList<String>();
-				plugin.setItem(new CommandItem(args[1], item, null, false, 0, null, true, list, list));
+				plugin.setItem(new CommandItem(args[1], item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
 				plugin.addNames(args[1]);
 				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + args[1] + "]として登録しました。");
 				return true;
@@ -79,7 +78,7 @@ public class MainCommand implements TabExecutor{
 			}
 			if(plugin.getItem(args[1]) != null){
 				plugin.removeItem(args[1]);
-				plugin.remvoeNames(args[1]);
+				plugin.removeNames(args[1]);
 				sender.sendMessage(ChatColor.AQUA + "指定アイテムの登録情報を削除しました。");
 				return true;
 			}
@@ -92,22 +91,22 @@ public class MainCommand implements TabExecutor{
 		}else if(args[0].equalsIgnoreCase("edit")){
 			if(args.length == 1){
 				sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "- Edit使用方法 -");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] permission [permission/null]");
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] permission [permission/null]");
 				sender.sendMessage(ChatColor.WHITE + "アイテムの使用に必要なパーミッションを設定します。値にnullを選択すると削除します。"
 						+ "パーミッションを設定しなくてもアイテムは使用出来ます。");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] cooldown [true/false]");
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] cooldown [true/false]");
 				sender.sendMessage(ChatColor.WHITE + "クールダウン機能を使用するか選択します。*");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] cooldownTick [tick]");
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] cooldownTick [tick]");
 				sender.sendMessage(ChatColor.WHITE + "クールダウン時間を指定します。単位はtickで、1秒=20tickとなります。");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] cooldownMessage [message/null]");
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] cooldownMessage [message/null]");
 				sender.sendMessage(ChatColor.WHITE + "クールダウン中にアイテムを使用しようとした場合に表示するメッセージを設定します。値にnullを選択すると削除します。"
 						+ "メッセージを設定していない場合はコンフィグのデフォルト値が参照されます。");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] remove [true/false]");
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] remove [true/false]");
 				sender.sendMessage(ChatColor.WHITE + "アイテムを消費するか選択します。*");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] actions [add/remove] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] actions [add/remove] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
 						+ "RIGHT_CLICK_ENTITY/LEFT_CLICK_ENTITY]");
 				sender.sendMessage(ChatColor.WHITE + "アイテム使用タイミングの条件選択をします。addで追加、removeで削除します。");
-				sender.sendMessage(ChatColor.WHITE + "/ic+ edit [name] commands [add/remove] [console/operator/player] [command]");
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] commands [add/remove] [console/operator/player] [command]");
 				sender.sendMessage(ChatColor.WHITE + "アイテム使用時に実行するコマンドを指定します。addで追加、removeで削除します。"
 						+ "consoleでコンソールから、operatorで権限無視、playerで権限確認有りのコマンドとして登録します。");
 				sender.sendMessage(ChatColor.GRAY + "* trueで有効、falseで無効になります。");
@@ -120,7 +119,6 @@ public class MainCommand implements TabExecutor{
 				}
 				sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "- " + item.getName() + " -");
 				sender.sendMessage(ChatColor.WHITE + "- Permission: " + item.getPermission());
-				sender.sendMessage(ChatColor.WHITE + "- Cooldown: " + item.getCooldown());
 				sender.sendMessage(ChatColor.WHITE + "- CooldownTick: " + item.getCooldownTick());
 				sender.sendMessage(ChatColor.WHITE + "- CooldownMessage: " + item.getCooldownMessage());
 				sender.sendMessage(ChatColor.WHITE + "- Remove: " + item.getRemove());
@@ -144,23 +142,6 @@ public class MainCommand implements TabExecutor{
 				plugin.setItem(item);
 				String s = item.getPermission() != null ? "[" + args[3] + "]に設定しました。" : "削除しました。";
 				sender.sendMessage(ChatColor.AQUA + "Permissionを" + s);
-				return true;
-			}else if(args[2].equalsIgnoreCase("cooldown")){
-				if(args.length == 3){
-					error(sender);
-					cmd(sender, args[0], args[2]);
-					return true;
-				}
-				if(args[3].equalsIgnoreCase("true"))item.setCooldown(true);
-				else if(args[3].equalsIgnoreCase("false"))item.setCooldown(false);
-				else{
-					error(sender);
-					cmd(sender, args[0], args[2]);
-					return true;
-				}
-				plugin.setItem(item);
-				String s = item.getCooldown() ? "有効" : "無効";
-				sender.sendMessage(ChatColor.AQUA + "Cooldownを[" + s + "]にしました。");
 				return true;
 			}else if(args[2].equalsIgnoreCase("cooldownTick")){
 				if(args.length == 3){
@@ -260,6 +241,7 @@ public class MainCommand implements TabExecutor{
 				}
 				if(args[3].equalsIgnoreCase("add")){
 					String s = plugin.stringBuild(args, 4);
+					for(String ss : args)plugin.info(ss);
 					item.addCommand(s);
 					plugin.setItem(item);
 					sender.sendMessage(ChatColor.AQUA + "Commandsに[" + s + "]を追加しました。");
@@ -324,8 +306,6 @@ public class MainCommand implements TabExecutor{
 		}else if(s.equalsIgnoreCase("edit")){
 			if(sub.equalsIgnoreCase("permission")){
 				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] permission [permission]");
-			}else if(sub.equalsIgnoreCase("cooldown")){
-				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] cooldown [true/false]");
 			}else if(sub.equalsIgnoreCase("cooldownTick")){
 				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] cooldownTick [tick]");
 			}else if(sub.equalsIgnoreCase("cooldownMessage")){
@@ -336,7 +316,7 @@ public class MainCommand implements TabExecutor{
 				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] actions [add/remove] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
 						+ "RIGHT_CLICK_ENTITY/LEFT_CLICK_ENTITY");
 			}else if(sub.equalsIgnoreCase("commands")){
-				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] commands [add/remove] [command]");
+				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] commands [add/remove] [console/operator/player] [command]");
 			}
 		}else if(s.equalsIgnoreCase("backup")){
 			sender.sendMessage(ChatColor.AQUA + "/ic+ backup [config/data]");

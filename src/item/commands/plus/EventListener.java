@@ -30,11 +30,12 @@ public class EventListener implements Listener{
 		Block b = e.getBlock();
 		Entity en = e.getEntity();
 		if(item.getPermission() != null && !p.hasPermission(item.getPermission()))return;
-		if(item.getCooldown() && plugin.isCooldown(uuid, name, item.getCooldownTick())){
+		if(item.getCooldownTick() > 0 && plugin.isCooldown(uuid, name, item.getCooldownTick())){
 			String s = item.getCooldownMessage() != null ? item.getCooldownMessage() : plugin.replaceCooldown(plugin.getDefaultCooldownMessage(), plugin.getCooldownTick(uuid, name));
 			p.sendMessage(s);
 			return;
 		}else if(!plugin.isCooldown(uuid, name, item.getCooldownTick()))plugin.removeCooldown(uuid, name);
+		if(item.getCommands().isEmpty())return;
 		for(String command : item.getCommands()){
 			command = plugin.replaceHolder(command, p);
 			if(b != null)command = plugin.replaceBlock(command, b);

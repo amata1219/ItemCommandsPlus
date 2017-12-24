@@ -1,27 +1,26 @@
 package item.commands.plus;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.bukkit.inventory.ItemStack;
 
-public class CommandItem {
+public class CommandItem implements Serializable{
 
 	private String name;
-	private ItemStack item;
+	private transient ItemStack item;
 	private String permission;
-	private boolean cooldown;
 	private String cooldownTick;
 	private String cooldownMessage;
 	private boolean remove;
 	private List<String> actions;
 	private List<String> commands;
 
-	CommandItem(String name, ItemStack item, String permission, boolean cooldown, int cooldownTick, String cooldownMessage,
+	CommandItem(String name, ItemStack item, String permission, int cooldownTick, String cooldownMessage,
 			boolean remove, List<String> actions, List<String> commands){
 		setName(name);
 		setItemStack(item);
 		setPermission(permission);
-		setCooldown(cooldown);
 		setCooldownTick(cooldownTick);
 		setCooldownMessage(cooldownMessage);
 		setRemove(remove);
@@ -51,14 +50,6 @@ public class CommandItem {
 
 	public String getPermission(){
 		return permission;
-	}
-
-	public void setCooldown(boolean cooldown){
-		this.cooldown = cooldown;
-	}
-
-	public boolean getCooldown(){
-		return cooldown;
 	}
 
 	public void setCooldownTick(int cooldownTick){
@@ -103,7 +94,7 @@ public class CommandItem {
 
 	public String getActionsForDisplay(){
 		StringBuilder sb = new StringBuilder();
-		for(String s : getActions())sb.append(s + ", ");
+		for(String s : getActions())sb.append(s + " ");
 		return sb.substring(0, sb.length()).toString();
 	}
 
@@ -125,7 +116,7 @@ public class CommandItem {
 
 	public String getCommandsForDisplay(){
 		StringBuilder sb = new StringBuilder();
-		for(String s : getCommands())sb.append(s + ", ");
+		for(String s : getCommands())sb.append(s + " ");
 		return sb.substring(0, sb.length()).toString();
 	}
 }

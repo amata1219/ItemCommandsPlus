@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,14 +39,18 @@ public class ItemCommandsPlus extends JavaPlugin {
 		plugin = this;
 
 		config = new CustomConfig(plugin);
+		config.saveDefaultConfig();
+
 		data = new CustomConfig(plugin, "data.yml");
+		data.saveDefaultConfig();
 
 		commands = new HashMap<String, TabExecutor>();
 		commands.put("ic+", new MainCommand(plugin));
 
 		cooldown = new HashMap<String, String>();
 
-		createFolder();
+		createBackupFolder();
+		createDataFolder();
 
 		getServer().getPluginManager().registerEvents(new EventListener(), plugin);
 
@@ -69,6 +75,24 @@ public class ItemCommandsPlus extends JavaPlugin {
 		if(isEnableLogging())info(ChatColor.GRAY + "" + p.getName() + "(" + p.getUniqueId() + ") used " + item.getName() + ".");
 	}
 
+	public void serializableCommandItem(CommandItem item){
+		try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(plugin.getDataFolder() + File.separator + "Data" + File.separator + item.getName() + ".bin"))){
+			oos.writeObject(item);
+		}catch(IOException e){
+			return;
+		}
+	}
+
+	public CommandItem deserializableCommandItem(String name){
+		CommandItem item = null;
+		try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(plugin.getDataFolder() + File.separator + "Data" + File.separator + name + ".bin"))){
+			item = (CommandItem) ois.readObject();
+		}catch(IOException|ClassNotFoundException e){
+			return null;
+		}
+		return item;
+	}
+
 	public List<CommandItem> getItems(){
 		List<CommandItem> items = new ArrayList<CommandItem>();
 		for(String name : getNames())items.add(getItem(name));
@@ -80,13 +104,15 @@ public class ItemCommandsPlus extends JavaPlugin {
 		if(!list.contains(name)){
 			list.add(name);
 			data.getConfig().set("Names", list);
+			data.updateConfig();
 		}
 	}
 
-	public void remvoeNames(String name){
+	public void removeNames(String name){
 		List<String> list = getNames();
 		list.remove(name);
 		data.getConfig().set("Names", list);
+		data.updateConfig();
 	}
 
 	public List<String> getNames(){
@@ -94,16 +120,25 @@ public class ItemCommandsPlus extends JavaPlugin {
 	}
 
 	public void setItem(CommandItem item){
-		data.getConfig().set(item.getName(), item);
-		config.updateConfig();
+		serializableCommandItem(item);
+		data.getConfig().set(item.getName(), item.getItemStack());
+		data.updateConfig();
 	}
 
 	public void removeItem(String name){
-		data.getConfig().set(name, null);
+		deleteFile(name);
+		try{
+			data.getConfig().set(name, null);
+			data.updateConfig();
+		}catch(NullPointerException e){
+			return;
+		}
 	}
 
 	public CommandItem getItem(String name){
-		return (CommandItem) data.getConfig().get(name);
+		CommandItem item = deserializableCommandItem(name);
+		if(item != null)item.setItemStack(data.getConfig().getItemStack(name));
+		return item;
 	}
 
 	public void setCooldown(UUID uuid, String name){
@@ -189,13 +224,24 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public String stringBuild(String[] args, int min){
 		StringBuilder sb = new StringBuilder();
-		for(int i = min; i < args.length; i++)sb.append(sb + " ");
-		return sb.substring(0, sb.length()).toString();
+		for(int i = min; i < args.length; i++)sb.append(args[i] + " ");
+		info(sb.toString().substring(0, sb.length()));
+		return sb.toString().substring(0, sb.length());
 	}
 
-	private  void createFolder(){
+	private  void createBackupFolder(){
 		File file = new File(plugin.getDataFolder() + File.separator + "Backup");
 		if(!file.exists())file.mkdir();
+	}
+
+	private  void createDataFolder(){
+		File file = new File(plugin.getDataFolder() + File.separator + "Data");
+		if(!file.exists())file.mkdir();
+	}
+
+	private void deleteFile(String name){
+		File file = new File(plugin.getDataFolder() + File.separator + "Data" + File.separator + name + ".bin");
+		if(file.exists())file.delete();
 	}
 
 	public void backupFile(String s) throws IOException{
