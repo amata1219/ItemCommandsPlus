@@ -1,2 +1,3 @@
-DefaultCooldownMessage: §4クールダウン中です(後[cooldown:s]秒)！
+DefaultCooldownMessage: §cクールダウン中です(後[cooldown:s]秒)！
+DefaultPermissionMessage: §cパーミッション([permission])が無いため使用出来ません！
 EnableLogging: false

@@ -43,9 +43,11 @@ public class MainCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.AQUA + "/ic+ commands");
 			sender.sendMessage(ChatColor.WHITE + "- 本プラグインのコマンド一覧を表示します。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ add [name]");
-			sender.sendMessage(ChatColor.WHITE + "- 手に持ったアイテムを指定した名前で登録します。");
+			sender.sendMessage(ChatColor.WHITE + "- メインハンドに持っているアイテムを指定した名前で登録します。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ remove [name]");
-			sender.sendMessage(ChatColor.WHITE + "- 指定した名前で登録されている情報を削除します。");
+			sender.sendMessage(ChatColor.WHITE + "- 指定アイテムの登録情報を削除します。");
+			sender.sendMessage(ChatColor.AQUA + "/ic+ give [name]");
+			sender.sendMessage(ChatColor.WHITE + "- 指定した名前で登録されているアイテムを入手します。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] [permission/cooldownTick/cooldownMessage/remove/actions/commands]");
 			sender.sendMessage(ChatColor.WHITE + "- 登録されたアイテム情報を編集します。使用方法は /ic+ edit でご確認下さい。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ list");
@@ -84,6 +86,21 @@ public class MainCommand implements TabExecutor{
 			}
 			sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
 			return true;
+		}else if(args[0].equalsIgnoreCase("give")){
+			Player p = isPlayer(sender);
+			if(p == null)return true;
+			if(args.length != 2){
+				error(sender);
+				cmd(sender, args[0], null);
+				return true;
+			}
+			if(plugin.getItem(args[1]) != null){
+				plugin.getServer().getWorld(p.getWorld().getName()).dropItem(p.getLocation(), plugin.getItem(args[1]).getItemStack());
+				sender.sendMessage(ChatColor.AQUA + "指定アイテムを入手しました。");
+				return true;
+			}
+			sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
+			return true;
 		}else if(args[0].equalsIgnoreCase("list")){
 			sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "- 登録アイテム一覧 -");
 			for(String name : plugin.getNames())sender.sendMessage("- " + name);
@@ -103,11 +120,11 @@ public class MainCommand implements TabExecutor{
 						+ "メッセージを設定していない場合はコンフィグのデフォルト値が参照されます。");
 				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] remove [true/false]");
 				sender.sendMessage(ChatColor.WHITE + "アイテムを消費するか選択します。*");
-				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] actions [add/remove] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
+				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] actions [add/remove/clear] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
 						+ "RIGHT_CLICK_ENTITY/LEFT_CLICK_ENTITY]");
-				sender.sendMessage(ChatColor.WHITE + "アイテム使用タイミングの条件選択をします。addで追加、removeで削除します。");
+				sender.sendMessage(ChatColor.WHITE + "アイテム使用タイミングの条件選択をします。addで追加、removeで削除、clearで全削除します。");
 				sender.sendMessage(ChatColor.AQUA + "/ic+ edit [name] commands [add/remove] [console/operator/player] [command]");
-				sender.sendMessage(ChatColor.WHITE + "アイテム使用時に実行するコマンドを指定します。addで追加、removeで削除します。"
+				sender.sendMessage(ChatColor.WHITE + "アイテム使用時に実行するコマンドを指定します。addで追加、removeで削除、clearで全削除します。"
 						+ "consoleでコンソールから、operatorで権限無視、playerで権限確認有りのコマンドとして登録します。");
 				sender.sendMessage(ChatColor.GRAY + "* trueで有効、falseで無効になります。");
 				return true;
@@ -196,6 +213,12 @@ public class MainCommand implements TabExecutor{
 				return true;
 			}else if(args[2].equalsIgnoreCase("actions")){
 				if(args.length == 3||args.length == 4){
+					if(args.length == 4 && args[3].equalsIgnoreCase("clear")){
+						item.setActions(new ArrayList<String>());
+						plugin.setItem(item);
+						sender.sendMessage(ChatColor.AQUA + "Actionsをクリアしました。");
+						return true;
+					}
 					error(sender);
 					cmd(sender, args[0], args[2]);
 					return true;
@@ -235,24 +258,29 @@ public class MainCommand implements TabExecutor{
 				}
 			}else if(args[2].equalsIgnoreCase("commands")){
 				if(args.length == 3||args.length == 4||args.length == 5||!plugin.types().contains(args[4].toLowerCase())){
+					if(args.length == 4 && args[3].equalsIgnoreCase("clear")){
+						item.setCommands(new ArrayList<String>());
+						plugin.setItem(item);
+						sender.sendMessage(ChatColor.AQUA + "Commandsをクリアしました。");
+						return true;
+					}
 					error(sender);
 					cmd(sender, args[0], args[2]);
 					return true;
 				}
 				if(args[3].equalsIgnoreCase("add")){
 					String s = plugin.stringBuild(args, 4);
-					for(String ss : args)plugin.info(ss);
 					item.addCommand(s);
 					plugin.setItem(item);
-					sender.sendMessage(ChatColor.AQUA + "Commandsに[" + s + "]を追加しました。");
+					sender.sendMessage(ChatColor.AQUA + "Commandsに[" + plugin.substring(s) + "]を追加しました。");
 					return true;
 				}else if(args[3].equalsIgnoreCase("remove")){
 					String s = plugin.stringBuild(args, 4);
 					for(String c : item.getCommands()){
-						if(s.equalsIgnoreCase(c)){
+						if(s.equals(c)){
 							item.removeCommand(c);
 							plugin.setItem(item);
-							sender.sendMessage(ChatColor.AQUA + "Commandsから[" + c + "]を削除しました。");
+							sender.sendMessage(ChatColor.AQUA + "Commandsから[" + plugin.substring(s)  + "]を削除しました。");
 							return true;
 						}
 					}
@@ -262,24 +290,25 @@ public class MainCommand implements TabExecutor{
 				}
 			}
 		}else if(args[0].equalsIgnoreCase("backup")){
-			if(args.length == 3){
+			if(args.length == 1){
 				error(sender);
 				cmd(sender, args[0], null);
 				return true;
 			}
-			if(args[3].equalsIgnoreCase("config")||args[3].equalsIgnoreCase("data")){
+			if(args[1].equalsIgnoreCase("config")||args[1].equalsIgnoreCase("data")){
 				try{
-					plugin.backupFile(args[3].toLowerCase());
+					plugin.backupFile(args[1].toLowerCase());
 				}catch(IOException e){
 					sender.sendMessage(ChatColor.RED + "エラーが発生したため正常に処理を行えませんでした。");
 					e.printStackTrace();
 					return true;
 				}
-				sender.sendMessage(ChatColor.AQUA + "" + args[3].toLowerCase() + ".ymlをバックアップしました。");
+				sender.sendMessage(ChatColor.AQUA + "" + args[1].toLowerCase() + ".ymlをバックアップしました。");
 				return true;
 			}
 		}else if(args[0].equalsIgnoreCase("reload")){
 			config.reloadConfig();
+			plugin.loadValue();
 			sender.sendMessage(ChatColor.AQUA + "コンフィグをリロードしました。");
 			return true;
 		}
@@ -313,10 +342,10 @@ public class MainCommand implements TabExecutor{
 			}else if(sub.equalsIgnoreCase("remove")){
 				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] remove [true/false]");
 			}else if(sub.equalsIgnoreCase("actions")){
-				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] actions [add/remove] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
+				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] actions [add/remove/clear] [RIGHT_CLICK_AIR/RIGHT_CLICK_BLOCK/LEFT_CLICK_AIR/LEFT_CLICK_BLOCK/"
 						+ "RIGHT_CLICK_ENTITY/LEFT_CLICK_ENTITY");
 			}else if(sub.equalsIgnoreCase("commands")){
-				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] commands [add/remove] [console/operator/player] [command]");
+				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] commands [add/remove/clear] [console/operator/player] [command]");
 			}
 		}else if(s.equalsIgnoreCase("backup")){
 			sender.sendMessage(ChatColor.AQUA + "/ic+ backup [config/data]");

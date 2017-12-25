@@ -94,7 +94,7 @@ public class CommandItem implements Serializable{
 
 	public String getActionsForDisplay(){
 		StringBuilder sb = new StringBuilder();
-		for(String s : getActions())sb.append(s + " ");
+		for(String s : getActions())sb.append(s + ", ");
 		return sb.substring(0, sb.length()).toString();
 	}
 
@@ -116,7 +116,14 @@ public class CommandItem implements Serializable{
 
 	public String getCommandsForDisplay(){
 		StringBuilder sb = new StringBuilder();
-		for(String s : getCommands())sb.append(s + " ");
+		for(String s : getCommands())sb.append(substring(s) + ", ");
 		return sb.substring(0, sb.length()).toString();
+	}
+
+	private String substring(String s){
+		if(s.startsWith("console "))return "[console] " + s.substring(8);
+		else if(s.startsWith("operator "))return "[operator] " +s.substring(9);
+		else if(s.startsWith("player "))return "[player] " +s.substring(7);
+		return s;
 	}
 }

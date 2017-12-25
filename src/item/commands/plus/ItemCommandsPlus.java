@@ -33,6 +33,11 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	private HashMap<String, TabExecutor> commands;
 	private HashMap<String, String> cooldown;
+	private List<CommandItem> items;
+
+	private String defaultCooldownMessage;
+	private String defaultPermissionMessage;
+	private boolean enableLogging;
 
 	@Override
 	public void onEnable(){
@@ -48,6 +53,11 @@ public class ItemCommandsPlus extends JavaPlugin {
 		commands.put("ic+", new MainCommand(plugin));
 
 		cooldown = new HashMap<String, String>();
+
+		items = new ArrayList<CommandItem>();
+		loadItems();
+
+		loadValue();
 
 		createBackupFolder();
 		createDataFolder();
@@ -66,13 +76,19 @@ public class ItemCommandsPlus extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
 		return commands.get(command.getName()).onCommand(sender, command, label, args);
 	}
+	
+	public void loadValue(){
+		defaultCooldownMessage = config.getConfig().getString("DefaultCooldownMessage");
+		defaultPermissionMessage = config.getConfig().getString("DefaultPermissionMessage");
+		enableLogging = config.getConfig().getBoolean("EnableLogging");
+	}
 
 	public void info(String s){
 		getLogger().info(s);
 	}
 
 	public void logging(Player p, CommandItem item){
-		if(isEnableLogging())info(ChatColor.GRAY + "" + p.getName() + "(" + p.getUniqueId() + ") used " + item.getName() + ".");
+		if(isEnableLogging())info(p.getName() + "(" + p.getUniqueId() + ") used " + item.getName() + ".");
 	}
 
 	public void serializableCommandItem(CommandItem item){
@@ -93,9 +109,12 @@ public class ItemCommandsPlus extends JavaPlugin {
 		return item;
 	}
 
-	public List<CommandItem> getItems(){
-		List<CommandItem> items = new ArrayList<CommandItem>();
+	public void loadItems(){
+		items.clear();
 		for(String name : getNames())items.add(getItem(name));
+	}
+
+	public List<CommandItem> getItems(){
 		return items;
 	}
 
@@ -105,6 +124,7 @@ public class ItemCommandsPlus extends JavaPlugin {
 			list.add(name);
 			data.getConfig().set("Names", list);
 			data.updateConfig();
+			loadItems();
 		}
 	}
 
@@ -113,6 +133,7 @@ public class ItemCommandsPlus extends JavaPlugin {
 		list.remove(name);
 		data.getConfig().set("Names", list);
 		data.updateConfig();
+		loadItems();
 	}
 
 	public List<String> getNames(){
@@ -123,6 +144,7 @@ public class ItemCommandsPlus extends JavaPlugin {
 		serializableCommandItem(item);
 		data.getConfig().set(item.getName(), item.getItemStack());
 		data.updateConfig();
+		loadItems();
 	}
 
 	public void removeItem(String name){
@@ -133,6 +155,7 @@ public class ItemCommandsPlus extends JavaPlugin {
 		}catch(NullPointerException e){
 			return;
 		}
+		loadItems();
 	}
 
 	public CommandItem getItem(String name){
@@ -158,16 +181,25 @@ public class ItemCommandsPlus extends JavaPlugin {
 	}
 
 	public boolean isCooldown(UUID uuid, String name, int cooldownTick){
-		if(!cooldown.containsKey(uuid.toString()))return false;
+		if(!cooldown.containsKey(uuid.toString() + ":" + name))return false;
+		info(Long.valueOf(getCooldownTime(uuid,  name)) + ":long");
 		return (System.currentTimeMillis() - Long.valueOf(getCooldownTime(uuid,  name))) / 50 <= cooldownTick;
 	}
 
 	public String getDefaultCooldownMessage(){
-		return config.getConfig().getString("DefaultCooldownMessage");
+		return defaultCooldownMessage;
 	}
 
-	public String replaceCooldown(String s, int tick){
-		return s.replace("[cooldown:t]", String.valueOf(tick)).replace("[cooldown:s]", String.valueOf((double) tick / 20));
+	public String getDefaultPermissionMessage(){
+		return defaultPermissionMessage;
+	}
+
+	public String replaceCooldown(String s, int cooldownTick, int tick){
+		return s.replace("[cooldown:t]", String.valueOf(cooldownTick - tick)).replace("[cooldown:s]", String.valueOf((double) (cooldownTick -  tick) / 20));
+	}
+
+	public String replacePermission(String s, String permission){
+		return s.replace("[permission]", permission);
 	}
 
 	public String replaceBlock(String s, Block b){
@@ -178,8 +210,9 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public String replaceEntity(String s, Entity e){
 		Location loc = e.getLocation();
+		String customName =  e.getCustomName() != null ? e.getCustomName() : "";
 		return s.replace("[e_loc:x]", String.valueOf(loc.getBlockX())).replace("[e_loc:y]", String.valueOf(loc.getBlockY())).replace("[e_loc:z]", String.valueOf(loc.getBlockZ()))
-				.replace("[e_name]", e.getName()).replace("[e_customName]", e.getCustomName());
+				.replace("[e_name]", e.getName()).replace("[e_customName]", customName);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -194,8 +227,9 @@ public class ItemCommandsPlus extends JavaPlugin {
 	@SuppressWarnings("deprecation")
 	public String replaceHolder(String s, Player p){
 		Location loc = p.getLocation();
-		Location bed = p.getBedSpawnLocation();
-		return s.replace("[name]", p.getName()).replace("[customName]", p.getCustomName()).replace("[uuid]", p.getUniqueId().toString())
+		Location bed = p.getBedSpawnLocation()!= null ? p.getBedSpawnLocation() : new Location(p.getWorld(), 0, 0, 0);
+		String customName =  p.getCustomName() != null ? p.getCustomName() : "";
+		return s.replace("[name]", p.getName()).replace("[customName]",customName).replace("[uuid]", p.getUniqueId().toString())
 				.replace("[loc:x]", String.valueOf(loc.getBlockX())).replace("[loc:y]", String.valueOf(loc.getBlockY())).replace("[loc:z]", String.valueOf(loc.getBlockZ()))
 				.replace("[bed:x]", String.valueOf(bed.getBlockX())).replace("[bed:y]", String.valueOf(bed.getBlockY())).replace("[bed:z]", String.valueOf(bed.getBlockZ()))
 				.replace("[exp]", String.valueOf(p.getExp())).replace("[expLv]", String.valueOf(p.getExpToLevel())).replace("[maxHp]", String.valueOf(p.getMaxHealth()))
@@ -208,7 +242,7 @@ public class ItemCommandsPlus extends JavaPlugin {
 	}
 
 	public boolean isEnableLogging(){
-		return config.getConfig().getBoolean("EnableLogging");
+		return enableLogging;
 	}
 
 	public List<String> actions(){
@@ -222,11 +256,16 @@ public class ItemCommandsPlus extends JavaPlugin {
 		return list;
 	}
 
+	public String substring(String s){
+		if(s.startsWith("console "))return "[console] " + s.substring(8);
+		else if(s.startsWith("operator "))return "[operator] " +s.substring(9);
+		else if(s.startsWith("player "))return "[player] " +s.substring(7);
+		return s;
+	}
 	public String stringBuild(String[] args, int min){
 		StringBuilder sb = new StringBuilder();
 		for(int i = min; i < args.length; i++)sb.append(args[i] + " ");
-		info(sb.toString().substring(0, sb.length()));
-		return sb.toString().substring(0, sb.length());
+		return sb.toString().substring(0, sb.length() - 1);
 	}
 
 	private  void createBackupFolder(){
