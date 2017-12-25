@@ -67,6 +67,10 @@ public class MainCommand implements TabExecutor{
 			}
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if(item != null && item.getType() != null && item.getType() != Material.AIR){
+				if(plugin.getNames().contains(args[1])){
+					p.sendMessage(ChatColor.RED + "既に登録名が使用されています。");
+					return true;
+				}
 				plugin.setItem(new CommandItem(args[1], item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
 				plugin.addNames(args[1]);
 				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + args[1] + "]として登録しました。");

@@ -76,7 +76,7 @@ public class ItemCommandsPlus extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
 		return commands.get(command.getName()).onCommand(sender, command, label, args);
 	}
-	
+
 	public void loadValue(){
 		defaultCooldownMessage = config.getConfig().getString("DefaultCooldownMessage");
 		defaultPermissionMessage = config.getConfig().getString("DefaultPermissionMessage");
@@ -182,7 +182,6 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public boolean isCooldown(UUID uuid, String name, int cooldownTick){
 		if(!cooldown.containsKey(uuid.toString() + ":" + name))return false;
-		info(Long.valueOf(getCooldownTime(uuid,  name)) + ":long");
 		return (System.currentTimeMillis() - Long.valueOf(getCooldownTime(uuid,  name))) / 50 <= cooldownTick;
 	}
 

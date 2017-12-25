@@ -1,6 +1,6 @@
 name: ItemCommandsPlus
 main: item.commands.plus.ItemCommandsPlus
-version: 1.2.0
+version: 2.0.0
 author: amata1219(Twitter-@amata1219)
 
 commands:

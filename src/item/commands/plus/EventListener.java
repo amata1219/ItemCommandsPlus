@@ -9,6 +9,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -80,13 +81,15 @@ public class EventListener implements Listener{
 		if(item.getRemove()){
 			if(itemStack.getAmount() == 1)itemStack = null;
 			else itemStack.setAmount(itemStack.getAmount() - 1);
-			p.getInventory().setItem(e.getSlotNumber(), itemStack);
+			if(e.getSlotNumber() == 106)p.getInventory().setItemInOffHand(itemStack);
+			else p.getInventory().setItemInMainHand(itemStack);
 		}
 		plugin.setCooldown(uuid, name);
 	}
 
 	@EventHandler
 	public void onPlayerInteractEvent(PlayerInteractEvent e){
+		if(e.getAction().equals(Action.PHYSICAL))return;
 		Player p = e.getPlayer();
 		ItemStack item = null;
 		int slot = 0;
