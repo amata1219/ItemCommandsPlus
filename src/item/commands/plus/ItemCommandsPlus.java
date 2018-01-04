@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,10 +19,12 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 public class ItemCommandsPlus extends JavaPlugin {
 
@@ -60,7 +61,8 @@ public class ItemCommandsPlus extends JavaPlugin {
 		loadValue();
 
 		createBackupFolder();
-		createDataFolder();
+
+		binaryToText();
 
 		getServer().getPluginManager().registerEvents(new EventListener(), plugin);
 
@@ -89,14 +91,6 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public void logging(Player p, CommandItem item){
 		if(isEnableLogging())info(p.getName() + "(" + p.getUniqueId() + ") used " + item.getName() + ".");
-	}
-
-	public void serializableCommandItem(CommandItem item){
-		try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(plugin.getDataFolder() + File.separator + "Data" + File.separator + item.getName() + ".bin"))){
-			oos.writeObject(item);
-		}catch(IOException e){
-			return;
-		}
 	}
 
 	public CommandItem deserializableCommandItem(String name){
@@ -130,7 +124,11 @@ public class ItemCommandsPlus extends JavaPlugin {
 
 	public void removeNames(String name){
 		List<String> list = getNames();
-		list.remove(name);
+		List<String> remove = new ArrayList<String>();
+		for(String s : list){
+			if(name.equalsIgnoreCase(s))remove.add(s);
+		}
+		for(String s : remove)list.remove(s);
 		data.getConfig().set("Names", list);
 		data.updateConfig();
 		loadItems();
@@ -141,8 +139,13 @@ public class ItemCommandsPlus extends JavaPlugin {
 	}
 
 	public void setItem(CommandItem item){
-		serializableCommandItem(item);
 		data.getConfig().set(item.getName(), item.getItemStack());
+		data.getConfig().set(item.getName() + "-Setting.Permission", item.getPermission());
+		data.getConfig().set(item.getName() + "-Setting.CooldownTick", item.getCooldownTick());
+		data.getConfig().set(item.getName() + "-Setting.CooldownMessage", item.getCooldownMessage());
+		data.getConfig().set(item.getName() + "-Setting.Remove", item.getRemove());
+		data.getConfig().set(item.getName() + "-Setting.Actions", item.getActions());
+		data.getConfig().set(item.getName() + "-Setting.Commands", item.getCommands());
 		data.updateConfig();
 		loadItems();
 	}
@@ -151,6 +154,12 @@ public class ItemCommandsPlus extends JavaPlugin {
 		deleteFile(name);
 		try{
 			data.getConfig().set(name, null);
+			data.getConfig().set(name + "-Setting.Permission", null);
+			data.getConfig().set(name + "-Setting.CooldownTick", null);
+			data.getConfig().set(name + "-Setting.CooldownMessage", null);
+			data.getConfig().set(name + "-Setting.Remove", null);
+			data.getConfig().set(name + "-Setting.Actions", null);
+			data.getConfig().set(name + "-Setting.Commands", null);
 			data.updateConfig();
 		}catch(NullPointerException e){
 			return;
@@ -159,8 +168,11 @@ public class ItemCommandsPlus extends JavaPlugin {
 	}
 
 	public CommandItem getItem(String name){
-		CommandItem item = deserializableCommandItem(name);
-		if(item != null)item.setItemStack(data.getConfig().getItemStack(name));
+		if(!getNames().contains(name))return null;
+		FileConfiguration d = data.getConfig();
+		CommandItem item = new CommandItem(name, d.getItemStack(name), d.getString(name + "-Setting.Permission"), d.getInt(name + "-Setting.CooldownTick"),
+				d.getString(name + "-Setting.CooldownMessage"), d.getBoolean(name + "-Setting.Remove"), d.getStringList(name + "-Setting.Actions"),
+				d.getStringList(name + "-Setting.Commands"));
 		return item;
 	}
 
@@ -228,12 +240,17 @@ public class ItemCommandsPlus extends JavaPlugin {
 		Location loc = p.getLocation();
 		Location bed = p.getBedSpawnLocation()!= null ? p.getBedSpawnLocation() : new Location(p.getWorld(), 0, 0, 0);
 		String customName =  p.getCustomName() != null ? p.getCustomName() : "";
+		Vector v = p.getLocation().getDirection();
 		return s.replace("[name]", p.getName()).replace("[customName]",customName).replace("[uuid]", p.getUniqueId().toString())
 				.replace("[loc:x]", String.valueOf(loc.getBlockX())).replace("[loc:y]", String.valueOf(loc.getBlockY())).replace("[loc:z]", String.valueOf(loc.getBlockZ()))
 				.replace("[bed:x]", String.valueOf(bed.getBlockX())).replace("[bed:y]", String.valueOf(bed.getBlockY())).replace("[bed:z]", String.valueOf(bed.getBlockZ()))
 				.replace("[exp]", String.valueOf(p.getExp())).replace("[expLv]", String.valueOf(p.getExpToLevel())).replace("[maxHp]", String.valueOf(p.getMaxHealth()))
 				.replace("[hp]", String.valueOf(p.getHealth())).replace("[hunger]", String.valueOf(p.getFoodLevel())).replace("[loc:w]", loc.getWorld().getName())
-				.replace("[bed:w]", bed.getWorld().getName());
+				.replace("[bed:w]", bed.getWorld().getName()).replace("[direction:x]", String.valueOf(v.getX())).replace("[direction:y]", String.valueOf(v.getY()))
+				.replace("[direction:z]", String.valueOf(v.getZ())).replace("&0", "§0").replace("&1", "§1").replace("&2", "§2").replace("&3", "§3").replace("&4", "§4")
+				.replace("&5", "§5").replace("&6", "§6").replace("&7", "§7").replace("&8", "§8").replace("&9", "§9").replace("&a", "§a").replace("&b", "§b")
+				.replace("&c", "§c").replace("&d", "§d").replace("&e", "§e").replace("&f", "§f").replace("&k", "§k").replace("&l", "§l").replace("&m", "§m")
+				.replace("&n", "§n").replace("&o", "§o").replace("&r", "§r");
 	}
 
 	public String toCommand(String s){
@@ -272,14 +289,30 @@ public class ItemCommandsPlus extends JavaPlugin {
 		if(!file.exists())file.mkdir();
 	}
 
-	private  void createDataFolder(){
-		File file = new File(plugin.getDataFolder() + File.separator + "Data");
-		if(!file.exists())file.mkdir();
-	}
-
 	private void deleteFile(String name){
 		File file = new File(plugin.getDataFolder() + File.separator + "Data" + File.separator + name + ".bin");
 		if(file.exists())file.delete();
+	}
+
+	private void binaryToText(){
+		File d = new File(plugin.getDataFolder() + File.separator + "Data");
+		if(d.exists()){
+			for(String s : getNames()){
+				File bin = new File(plugin.getDataFolder() + File.separator + "Data" + File.separator + s + ".bin");
+				if(bin.exists()){
+					CommandItem item = deserializableCommandItem(s);
+					data.getConfig().set(item.getName() + "-Setting.Permission", item.getPermission());
+					data.getConfig().set(item.getName() + "-Setting.CooldownTick", item.getCooldownTick());
+					data.getConfig().set(item.getName() + "-Setting.CooldownMessage", item.getCooldownMessage());
+					data.getConfig().set(item.getName() + "-Setting.Remove", item.getRemove());
+					data.getConfig().set(item.getName() + "-Setting.Actions", item.getActions());
+					data.getConfig().set(item.getName() + "-Setting.Commands", item.getCommands());
+					data.updateConfig();
+					deleteFile(s);
+				}
+			}
+			d.delete();
+		}
 	}
 
 	public void backupFile(String s) throws IOException{

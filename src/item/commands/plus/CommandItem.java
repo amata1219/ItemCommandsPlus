@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.inventory.ItemStack;
 
 public class CommandItem implements Serializable{
-
+	
 	private String name;
 	private transient ItemStack item;
 	private String permission;

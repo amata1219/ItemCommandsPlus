@@ -60,10 +60,26 @@ public class MainCommand implements TabExecutor{
 		}else if(args[0].equalsIgnoreCase("add")){
 			Player p = isPlayer(sender);
 			if(p == null)return true;
-			if(args.length != 2){
-				error(sender);
-				cmd(sender, args[0], null);
-				return true;
+			if(args.length == 1){
+				ItemStack item = p.getInventory().getItemInMainHand();
+				if(item != null && item.getType() != null && item.getType() != Material.AIR){
+					if(item.getItemMeta().getDisplayName() == null){
+						p.sendMessage(ChatColor.RED + "手に持っているアイテムにカスタムネームが設定されていません。");
+						return true;
+					}
+					String c = item.getItemMeta().getDisplayName();
+					if(plugin.getNames().contains(c)){
+						p.sendMessage(ChatColor.RED + "既に登録名が使用されています。");
+						return true;
+					}
+					plugin.setItem(new CommandItem(c, item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
+					plugin.addNames(c);
+					p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + c + "]として登録しました。");
+					return true;
+				}else{
+					p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
+					return true;
+				}
 			}
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if(item != null && item.getType() != null && item.getType() != Material.AIR){
@@ -74,6 +90,9 @@ public class MainCommand implements TabExecutor{
 				plugin.setItem(new CommandItem(args[1], item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
 				plugin.addNames(args[1]);
 				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + args[1] + "]として登録しました。");
+				return true;
+			}else{
+				p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
 				return true;
 			}
 		}else if(args[0].equalsIgnoreCase("remove")){
