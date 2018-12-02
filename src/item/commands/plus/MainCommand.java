@@ -16,6 +16,7 @@ public class MainCommand implements TabExecutor{
 
 	private ItemCommandsPlus plugin = ItemCommandsPlus.plugin;
 	private CustomConfig config = ItemCommandsPlus.config;
+	private CustomConfig data = ItemCommandsPlus.data;
 
 	MainCommand(ItemCommandsPlus plugin){
 		this.plugin = plugin;
@@ -54,8 +55,8 @@ public class MainCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.WHITE + "- 全アイテム名を表示します。");
 			sender.sendMessage(ChatColor.AQUA + "/ic+ backup [config/data]");
 			sender.sendMessage(ChatColor.WHITE + "- 指定ファイルをバックアップします。データは[plugins/ItemCommandPlus/Backup/指定ファイル名-現在のミリ秒時間.yml]として保存されます。");
-			sender.sendMessage(ChatColor.AQUA + "/ic+ reload");
-			sender.sendMessage(ChatColor.WHITE + "- コンフィグをリロードします。/ic+ edit コマンドを使用して値を書き換えた場合は実行する必要はありません。");
+			sender.sendMessage(ChatColor.AQUA + "/ic+ reload [config/data]");
+			sender.sendMessage(ChatColor.WHITE + "- 指定ファイルをリロードします。/ic+ edit コマンドを使用して値を書き換えた場合は実行する必要はありません。");
 			return true;
 		}else if(args[0].equalsIgnoreCase("add")){
 			Player p = isPlayer(sender);
@@ -74,7 +75,7 @@ public class MainCommand implements TabExecutor{
 					}
 					plugin.setItem(new CommandItem(c, item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
 					plugin.addNames(c);
-					p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + c + "]として登録しました。");
+					p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + c + ChatColor.AQUA + "]として登録しました。");
 					return true;
 				}else{
 					p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
@@ -83,13 +84,14 @@ public class MainCommand implements TabExecutor{
 			}
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if(item != null && item.getType() != null && item.getType() != Material.AIR){
-				if(plugin.getNames().contains(args[1])){
+				String s = replaceColor(args[1]);
+				if(plugin.getNames().contains(s)){
 					p.sendMessage(ChatColor.RED + "既に登録名が使用されています。");
 					return true;
 				}
-				plugin.setItem(new CommandItem(args[1], item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
-				plugin.addNames(args[1]);
-				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + args[1] + "]として登録しました。");
+				plugin.setItem(new CommandItem(s, item, null, 0, null, true, new ArrayList<String>(), new ArrayList<String>()));
+				plugin.addNames(s);
+				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + s + ChatColor.AQUA + "]として登録しました。");
 				return true;
 			}else{
 				p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
@@ -101,10 +103,11 @@ public class MainCommand implements TabExecutor{
 				cmd(sender, args[0], null);
 				return true;
 			}
-			if(plugin.getItem(args[1]) != null){
-				plugin.removeItem(args[1]);
-				plugin.removeNames(args[1]);
-				sender.sendMessage(ChatColor.AQUA + "指定アイテムの登録情報を削除しました。");
+			String s = replaceColor(args[1]);
+			if(plugin.getItem(s) != null){
+				plugin.removeItem(s);
+				plugin.removeNames(s);
+				sender.sendMessage(ChatColor.AQUA + "指定アイテム[" + s + ChatColor.AQUA + "]の登録情報を削除しました。");
 				return true;
 			}
 			sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
@@ -117,9 +120,10 @@ public class MainCommand implements TabExecutor{
 				cmd(sender, args[0], null);
 				return true;
 			}
-			if(plugin.getItem(args[1]) != null){
-				plugin.getServer().getWorld(p.getWorld().getName()).dropItem(p.getLocation(), plugin.getItem(args[1]).getItemStack());
-				sender.sendMessage(ChatColor.AQUA + "指定アイテムを入手しました。");
+			String s = replaceColor(args[1]);
+			if(plugin.getItem(s) != null){
+				plugin.getServer().getWorld(p.getWorld().getName()).dropItem(p.getLocation(), plugin.getItem(s).getItemStack());
+				sender.sendMessage(ChatColor.AQUA + "指定アイテム[" + s + ChatColor.AQUA + "]を入手しました。");
 				return true;
 			}
 			sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
@@ -152,7 +156,8 @@ public class MainCommand implements TabExecutor{
 				sender.sendMessage(ChatColor.GRAY + "* trueで有効、falseで無効になります。");
 				return true;
 			}else if(args.length == 2){
-				CommandItem item = plugin.getItem(args[1]);
+				String s = replaceColor(args[1]);
+				CommandItem item = plugin.getItem(s);
 				if(item == null){
 					sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
 					return true;
@@ -166,7 +171,8 @@ public class MainCommand implements TabExecutor{
 				sender.sendMessage(ChatColor.WHITE + "- Commands: " + item.getCommandsForDisplay());
 				return true;
 			}
-			CommandItem item = plugin.getItem(args[1]);
+			String sc = replaceColor(args[1]);
+			CommandItem item = plugin.getItem(sc);
 			if(item == null){
 				sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
 				return true;
@@ -213,9 +219,10 @@ public class MainCommand implements TabExecutor{
 					return true;
 				}
 				String s = plugin.stringBuild(args, 3);
-				item.setCooldownMessage(s);
+				String c = replaceColor(s);
+				item.setCooldownMessage(c);
 				plugin.setItem(item);
-				sender.sendMessage(ChatColor.AQUA + "CooldownMessageを[" + s + "]に設定しました。");
+				sender.sendMessage(ChatColor.AQUA + "CooldownMessageを[" + c + ChatColor.AQUA + "]に設定しました。");
 				return true;
 			}else if(args[2].equalsIgnoreCase("remove")){
 				if(args.length == 3){
@@ -330,12 +337,26 @@ public class MainCommand implements TabExecutor{
 				return true;
 			}
 		}else if(args[0].equalsIgnoreCase("reload")){
-			config.reloadConfig();
-			plugin.loadValue();
-			sender.sendMessage(ChatColor.AQUA + "コンフィグをリロードしました。");
+			if(args.length == 1){
+				error(sender);
+				cmd(sender, args[0], null);
+				return true;
+			}
+			if(args[1].equalsIgnoreCase("config")){
+				config.reloadConfig();
+				plugin.loadValue();
+				sender.sendMessage(ChatColor.AQUA + "コンフィグ(config.yml)をリロードしました。");
+				return true;
+			}else if(args[1].equalsIgnoreCase("data")){
+				data.reloadConfig();
+				sender.sendMessage(ChatColor.AQUA + "コンフィグ(data.yml)をリロードしました。");
+				return true;
+			}
+			error(sender);
+			cmd(sender, args[0], null);
 			return true;
 		}
-		return false;
+		return true;
 	}
 
 	public Player isPlayer(CommandSender sender){
@@ -352,9 +373,9 @@ public class MainCommand implements TabExecutor{
 
 	public void cmd(CommandSender sender, String s, String sub){
 		if(s.equalsIgnoreCase("add")){
-			sender.sendMessage(ChatColor.AQUA + "/ic+ add [name]");
+			sender.sendMessage(ChatColor.GRAY + "/ic+ add [name]");
 		}else if(s.equalsIgnoreCase("remove")){
-			sender.sendMessage(ChatColor.AQUA + "/ic+ remove [name]");
+			sender.sendMessage(ChatColor.GRAY + "/ic+ remove [name]");
 		}else if(s.equalsIgnoreCase("edit")){
 			if(sub.equalsIgnoreCase("permission")){
 				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] permission [permission]");
@@ -371,7 +392,16 @@ public class MainCommand implements TabExecutor{
 				sender.sendMessage(ChatColor.GRAY + "/ic+ edit [name] commands [add/remove/clear] [console/operator/player] [command]");
 			}
 		}else if(s.equalsIgnoreCase("backup")){
-			sender.sendMessage(ChatColor.AQUA + "/ic+ backup [config/data]");
+			sender.sendMessage(ChatColor.GRAY + "/ic+ backup [config/data]");
+		}else if(s.equalsIgnoreCase("reload")){
+			sender.sendMessage(ChatColor.GRAY + "/ic+ reload [config/data]");
 		}
+	}
+
+	private String replaceColor(String s){
+		return s.replace("&0", "§0").replace("&1", "§1").replace("&2", "§2").replace("&3", "§3").replace("&4", "§4")
+				.replace("&5", "§5").replace("&6", "§6").replace("&7", "§7").replace("&8", "§8").replace("&9", "§9").replace("&a", "§a").replace("&b", "§b")
+				.replace("&c", "§c").replace("&d", "§d").replace("&e", "§e").replace("&f", "§f").replace("&k", "§k").replace("&l", "§l").replace("&m", "§m")
+				.replace("&n", "§n").replace("&o", "§o").replace("&r", "§r");
 	}
 }
