@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -14,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class MainCommand implements TabExecutor{
 
-	private ItemCommandsPlus plugin = ItemCommandsPlus.plugin;
+	private ItemCommandsPlus plugin;
 	private CustomConfig config = ItemCommandsPlus.config;
 	private CustomConfig data = ItemCommandsPlus.data;
 
@@ -63,8 +64,9 @@ public class MainCommand implements TabExecutor{
 			if(p == null)return true;
 			if(args.length == 1){
 				ItemStack item = p.getInventory().getItemInMainHand();
-				if(item != null && item.getType() != null && item.getType() != Material.AIR){
-					if(item.getItemMeta().getDisplayName() == null){
+				item.getType();
+				if(item.getType() != Material.AIR){
+					if(item.getItemMeta().getDisplayName().isEmpty()){
 						p.sendMessage(ChatColor.RED + "手に持っているアイテムにカスタムネームが設定されていません。");
 						return true;
 					}
@@ -83,7 +85,8 @@ public class MainCommand implements TabExecutor{
 				}
 			}
 			ItemStack item = p.getInventory().getItemInMainHand();
-			if(item != null && item.getType() != null && item.getType() != Material.AIR){
+			item.getType();
+			if(item.getType() != Material.AIR){
 				String s = replaceColor(args[1]);
 				if(plugin.getNames().contains(s)){
 					p.sendMessage(ChatColor.RED + "既に登録名が使用されています。");
@@ -113,16 +116,34 @@ public class MainCommand implements TabExecutor{
 			sender.sendMessage(ChatColor.RED + "指定アイテムは存在しません。");
 			return true;
 		}else if(args[0].equalsIgnoreCase("give")){
-			Player p = isPlayer(sender);
-			if(p == null)return true;
-			if(args.length != 2){
+			//ic+ give [player] [item] [amount]
+			if(args.length < 3){
+				sender.sendMessage(ChatColor.RED + "/ic+ give [player] [item-id] ([amount])");
 				error(sender);
 				cmd(sender, args[0], null);
 				return true;
 			}
-			String s = replaceColor(args[1]);
-			if(plugin.getItem(s) != null){
-				plugin.getServer().getWorld(p.getWorld().getName()).dropItem(p.getLocation(), plugin.getItem(s).getItemStack());
+			Player receiver = Bukkit.getPlayer(args[1]);
+			if (receiver == null || !receiver.isOnline()) {
+				sender.sendMessage(ChatColor.RED + "指定されたプレイヤーはオンラインではありません");
+				return true;
+			}
+			String s = replaceColor(args[2]);
+			CommandItem citem = plugin.getItem(s);
+			if(citem != null){
+				int amount = 1;
+				if (args.length >= 4) {
+					try {
+						amount = Math.max(Integer.parseInt(args[3]), 64);
+					}catch(NumberFormatException ex){
+						sender.sendMessage(ChatColor.RED + "アイテム数は半角数字で指定して下さい");
+						return true;
+					}
+				}
+				ItemStack istack = citem.getItemStack();
+				istack.setAmount(amount);
+				if (receiver.getInventory().firstEmpty() != -1) receiver.getInventory().addItem(istack);
+				else receiver.getWorld().dropItem(receiver.getLocation(), istack);
 				sender.sendMessage(ChatColor.AQUA + "指定アイテム[" + s + ChatColor.AQUA + "]を入手しました。");
 				return true;
 			}
