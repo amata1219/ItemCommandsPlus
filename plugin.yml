@@ -4,7 +4,7 @@ version: 2.0.1
 author: '@amata1219'
 commands:
   ic+:
-    description: It's main commands of this plugin.
+    description: This is the only and main command of the plugin.
     usage: /<command>
     permisson: item.commands.plus.icplus
     permissio-message: Yon don't have permission "<permission>"
