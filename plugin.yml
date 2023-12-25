@@ -1,8 +1,7 @@
 name: ItemCommandsPlus
 main: item.commands.plus.ItemCommandsPlus
 version: 2.0.1
-author: amata1219(Twitter-@amata1219)
-
+author: '@amata1219'
 commands:
   ic+:
     description: It's main commands of this plugin.
