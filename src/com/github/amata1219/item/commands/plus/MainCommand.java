@@ -80,7 +80,7 @@ public class MainCommand implements TabExecutor{
 					p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + c + ChatColor.AQUA + "]として登録しました。");
 					return true;
 				}else{
-					p.sendMessage(ChatColor.RED + "空気は登録出来ません。1");
+					p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
 					return true;
 				}
 			}
@@ -97,7 +97,7 @@ public class MainCommand implements TabExecutor{
 				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + s + ChatColor.AQUA + "]として登録しました。");
 				return true;
 			}else{
-				p.sendMessage(ChatColor.RED + "空気は登録出来ません。2");
+				p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
 				return true;
 			}
 		}else if(args[0].equalsIgnoreCase("remove")){
