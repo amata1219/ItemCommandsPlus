@@ -1,4 +1,4 @@
-package item.commands.plus;
+package com.github.amata1219.item.commands.plus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class MainCommand implements TabExecutor{
 					p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + c + ChatColor.AQUA + "]として登録しました。");
 					return true;
 				}else{
-					p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
+					p.sendMessage(ChatColor.RED + "空気は登録出来ません。1");
 					return true;
 				}
 			}
@@ -97,7 +97,7 @@ public class MainCommand implements TabExecutor{
 				p.sendMessage(ChatColor.AQUA + "手に持っているアイテムを[" + s + ChatColor.AQUA + "]として登録しました。");
 				return true;
 			}else{
-				p.sendMessage(ChatColor.RED + "空気は登録出来ません。");
+				p.sendMessage(ChatColor.RED + "空気は登録出来ません。2");
 				return true;
 			}
 		}else if(args[0].equalsIgnoreCase("remove")){

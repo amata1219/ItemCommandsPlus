@@ -1,4 +1,4 @@
-package item.commands.plus;
+package com.github.amata1219.item.commands.plus;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -332,7 +333,8 @@ public class ItemCommandsPlus extends JavaPlugin {
 	public URL getTopicURL(){
 		URL url = null;
 		try{
-		  url = new URL("http://forum.minecraftuser.jp/viewtopic.php?f=38&t=35479");
+		  URI uri = URI.create("http://forum.minecraftuser.jp/viewtopic.php?f=38&t=35479");
+		  url = uri.toURL();
 		}catch(MalformedURLException e){
 		  info(ChatColor.GRAY + "本プラグイン公開トピックのURLが正常に読み込めませんでした。");
 		}

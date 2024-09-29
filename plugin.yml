@@ -1,7 +1,9 @@
 name: ItemCommandsPlus
 main: com.github.amata1219.item.commands.plus.ItemCommandsPlus
-version: 2.0.1
+version: 2.1.1
 author: '@amata1219'
+api-version: '1.21'
+
 commands:
   ic+:
     description: This is the only and main command of the plugin.

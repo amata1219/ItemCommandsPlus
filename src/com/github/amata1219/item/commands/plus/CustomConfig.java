@@ -1,4 +1,4 @@
-package item.commands.plus;
+package com.github.amata1219.item.commands.plus;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,8 +8,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-
-import item.commands.plus.ItemCommandsPlus;
 
 public class CustomConfig {
 
