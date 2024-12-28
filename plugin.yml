@@ -1,6 +1,6 @@
 name: ItemCommandsPlus
 main: com.github.amata1219.item.commands.plus.ItemCommandsPlus
-version: 2.1.1
+version: 2.1.2
 author: '@amata1219'
 api-version: '1.21'
 
@@ -8,5 +8,5 @@ commands:
   ic+:
     description: This is the only and main command of the plugin.
     usage: /<command>
-    permisson: item.commands.plus.icplus
-    permissio-message: Yon don't have permission "<permission>"
+    permission: item.commands.plus.icplus
+    permission-message: Yon don't have permission "<permission>"
