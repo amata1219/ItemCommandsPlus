@@ -1,4 +1,4 @@
-package item.commands.plus;
+package com.github.amata1219.item.commands.plus;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;

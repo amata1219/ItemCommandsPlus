@@ -1,4 +1,4 @@
-package item.commands.plus;
+package com.github.amata1219.item.commands.plus;
 
 import java.util.UUID;
 
